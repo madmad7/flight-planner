@@ -1,5 +1,6 @@
 package io.codelex.flightplanner.flights;
 
+import io.codelex.flightplanner.exceptions.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,25 @@ public class FlightController {
     public ResponseEntity<Void> clearFlights() {
         flightService.clearAllFlights();
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/admin-api/flights")
+    public ResponseEntity<Flight> addFlight(@RequestBody Flight flight) {
+        try {
+            // Attempt to add the flight
+            boolean addedSuccessfully = flightService.addFlight(flight);
+
+            // If the flight was added successfully, return 201 Created
+            if (addedSuccessfully) {
+                return new ResponseEntity<>(flight, HttpStatus.CREATED);
+            } else {
+                // If the flight already exists, return 409 Conflict
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+        } catch (BadRequestException e) {
+            // If the request is invalid, return 400 Bad Request
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
 }
