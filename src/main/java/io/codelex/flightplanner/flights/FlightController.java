@@ -1,6 +1,9 @@
 package io.codelex.flightplanner.flights;
 
 import io.codelex.flightplanner.exceptions.BadRequestException;
+import io.codelex.flightplanner.exceptions.FlightAlreadyExistsException;
+import io.codelex.flightplanner.exceptions.FlightNotFoundException;
+import io.codelex.flightplanner.exceptions.InvalidFlightException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,65 +19,59 @@ public class FlightController {
     }
 
     @GetMapping("/admin-api/flights/{id}")
-    public ResponseEntity<Flight> getFlightById(@PathVariable int id) {
+    public Flight getFlightById(@PathVariable int id) {
         Flight flight = flightService.getFlightById(id);
-
         if (flight == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            throw new FlightNotFoundException("Flight not found with id: " + id);
         } else {
-            return new ResponseEntity<>(flight, HttpStatus.OK);
+            return flight;
         }
     }
 
     @PostMapping("/testing-api/clear")
-    public ResponseEntity<Void> clearFlights() {
+    public void clearFlights() {
         flightService.clearAllFlights();
-        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/admin-api/flights")
-    public ResponseEntity<Flight> addFlight(@RequestBody Flight flight) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public Flight addFlight(@RequestBody Flight flight) {
         try {
-            // Attempt to add the flight
             boolean addedSuccessfully = flightService.addFlight(flight);
-
-            // If the flight was added successfully, return 201 Created
             if (addedSuccessfully) {
-                return new ResponseEntity<>(flight, HttpStatus.CREATED);
+                return flight;
             } else {
-                // If the flight already exists, return 409 Conflict
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
+                throw new FlightAlreadyExistsException("Flight already exists");
             }
         } catch (BadRequestException e) {
-            // If the request is invalid, return 400 Bad Request
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new InvalidFlightException("Invalid flight details");
         }
     }
 
+    @DeleteMapping("/admin-api/flights/{id}")
+    public void deleteFlight(@PathVariable int id) {
+        flightService.deleteFlight(id);
+    }
+
+    @GetMapping("/api/airports")
+    public List<Airport> searchAirports(@RequestParam String search) {
+        return flightService.searchAirports(search);
+    }
+
+    @PostMapping("/api/flights/search")
+    public PageResult<Flight> searchFlights(@RequestBody SearchFlightsRequest request) {
+            List<Flight> flights = flightService.searchFlights(request);
+            return new PageResult<>(0, flights.size(), flights);
+    }
+
+
+    @GetMapping("/api/flights/{id}")
+    public Flight findFlightById(@PathVariable int id) {
+        Flight flight = flightService.getFlightById(id);
+        if (flight == null) {
+            throw new FlightNotFoundException("Flight not found");
+        }
+        return flight;
+    }
+
 }
-
-
-
-
-//    @GetMapping("/flights/123")
-//    public List<Flight> getFlightList() {
-//        return flightService.getAllFlights();
-//    }
-
-//    @GetMapping("/flights/{id}")
-//    public Flight getFlightById(@PathVariable int id) {
-//        return flightService.getFlightById(id);
-//    }
-
-
-
-
-//    @GetMapping("/flights}")
-//    public ResponseEntity<List<Flight>> getFlightList() {
-//        List<Flight> flights = flightService.getAllFlights();
-//        if (flights.isEmpty()) {
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        } else {
-//            return new ResponseEntity<>(flights, HttpStatus.OK);
-//        }
-//    }
