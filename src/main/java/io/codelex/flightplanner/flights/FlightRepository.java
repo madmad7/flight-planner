@@ -14,7 +14,7 @@ public class FlightRepository {
     private AtomicInteger nextId = new AtomicInteger(1);
 
 
-    public synchronized void addFlight(Flight flight) {
+    public void addFlight(Flight flight) {
         if (flight == null || isAnyFieldNull(flight) || flightExists(flight)) {
             throw new BadRequestException("Invalid flight details");
         }

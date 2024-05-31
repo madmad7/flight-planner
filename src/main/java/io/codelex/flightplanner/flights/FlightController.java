@@ -5,7 +5,6 @@ import io.codelex.flightplanner.exceptions.FlightAlreadyExistsException;
 import io.codelex.flightplanner.exceptions.FlightNotFoundException;
 import io.codelex.flightplanner.exceptions.InvalidFlightException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +18,12 @@ public class FlightController {
     }
 
     @GetMapping("/admin-api/flights/{id}")
-    public Flight getFlightById(@PathVariable int id) {
+    public ResponseToFlightRequest getFlightById(@PathVariable int id) {
         Flight flight = flightService.getFlightById(id);
         if (flight == null) {
             throw new FlightNotFoundException("Flight not found with id: " + id);
-        } else {
-            return flight;
         }
+        return flightService.convertToResponseFlight(flight);
     }
 
     @PostMapping("/testing-api/clear")
@@ -35,14 +33,12 @@ public class FlightController {
 
     @PutMapping("/admin-api/flights")
     @ResponseStatus(HttpStatus.CREATED)
-    public Flight addFlight(@RequestBody Flight flight) {
+    public ResponseToFlightRequest addFlight(@RequestBody AddFlightRequest request) {
         try {
-            boolean addedSuccessfully = flightService.addFlight(flight);
-            if (addedSuccessfully) {
-                return flight;
-            } else {
-                throw new FlightAlreadyExistsException("Flight already exists");
-            }
+            Flight flight = flightService.addFlight(request);
+            return flightService.convertToResponseFlight(flight);
+        } catch (FlightAlreadyExistsException e) {
+            throw new FlightAlreadyExistsException("Flight already exists");
         } catch (BadRequestException e) {
             throw new InvalidFlightException("Invalid flight details");
         }
@@ -59,19 +55,20 @@ public class FlightController {
     }
 
     @PostMapping("/api/flights/search")
-    public PageResult<Flight> searchFlights(@RequestBody SearchFlightsRequest request) {
-            List<Flight> flights = flightService.searchFlights(request);
-            return new PageResult<>(0, flights.size(), flights);
+    public PageResult<ResponseToFlightRequest> searchFlights(@RequestBody SearchFlightsRequest request) {
+        List<Flight> flights = flightService.searchFlights(request);
+        List<ResponseToFlightRequest> responseToFlightRequests = flights.stream()
+                .map(flightService::convertToResponseFlight)
+                .toList();
+        return new PageResult<>(0, responseToFlightRequests.size(), responseToFlightRequests);
     }
 
-
     @GetMapping("/api/flights/{id}")
-    public Flight findFlightById(@PathVariable int id) {
+    public ResponseToFlightRequest findFlightById(@PathVariable int id) {
         Flight flight = flightService.getFlightById(id);
         if (flight == null) {
             throw new FlightNotFoundException("Flight not found");
         }
-        return flight;
+        return flightService.convertToResponseFlight(flight);
     }
-
 }

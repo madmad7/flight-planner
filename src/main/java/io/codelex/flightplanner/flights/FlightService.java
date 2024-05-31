@@ -1,12 +1,13 @@
 package io.codelex.flightplanner.flights;
 
 import io.codelex.flightplanner.exceptions.BadRequestException;
-import org.springframework.beans.factory.annotation.Value;
+import io.codelex.flightplanner.exceptions.FlightAlreadyExistsException;
+import io.codelex.flightplanner.exceptions.InvalidFlightException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,25 +16,73 @@ import java.util.stream.Stream;
 public class FlightService {
 
     private final FlightRepository flightRepository;
-    @Value("${flight.date-pattern}")
-    private String datePattern;
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public FlightService(FlightRepository flightRepository) {
         this.flightRepository = flightRepository;
     }
 
-    public boolean addFlight(Flight flight) {
+    public synchronized Flight addFlight(AddFlightRequest request) {
+        Flight flight = convertToFlight(request);
         if (!isValidFlight(flight)) {
-            throw new BadRequestException("Invalid flight details");
+            throw new InvalidFlightException("Invalid flight details");
+        }
+        if (flightRepository.flightExists(flight)) {
+            throw new FlightAlreadyExistsException("Flight already exists");
+        }
+        flightRepository.addFlight(flight);
+        return flight;
+    }
+
+    public Flight convertToFlight(AddFlightRequest request) {
+        if (!isValidAddFlightRequest(request)) {
+            throw new InvalidFlightException("Invalid flight details");
         }
 
-        if (!flightRepository.flightExists(flight)) {
-            flightRepository.addFlight(flight);
-            return true;
-        } else {
+        LocalDateTime departureTime = LocalDateTime.parse(request.getDepartureTime(), formatter);
+        LocalDateTime arrivalTime = LocalDateTime.parse(request.getArrivalTime(), formatter);
+
+        return new Flight(
+                request.getFrom(),
+                request.getTo(),
+                request.getCarrier(),
+                departureTime,
+                arrivalTime
+        );
+    }
+
+    private boolean isValidAddFlightRequest(AddFlightRequest request) {
+        if (request == null) {
             return false;
         }
+
+        if (request.getFrom() == null ||
+                request.getTo() == null ||
+                request.getCarrier() == null || request.getCarrier().trim().isEmpty() ||
+                request.getDepartureTime() == null ||
+                request.getArrivalTime() == null) {
+            return false;
+        }
+
+        try {
+            LocalDateTime departureTime = LocalDateTime.parse(request.getDepartureTime(), formatter);
+            LocalDateTime arrivalTime = LocalDateTime.parse(request.getArrivalTime(), formatter);
+
+            if (!arrivalTime.isAfter(departureTime)) {
+                return false;
+            }
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+
+        return true;
     }
+
+    public ResponseToFlightRequest convertToResponseFlight(Flight flight) {
+        return ResponseToFlightRequest.fromFlight(flight);
+    }
+
 
     private boolean isValidFlight(Flight flight) {
         return flight != null &&
@@ -43,7 +92,7 @@ public class FlightService {
                 flight.getCarrier() != null && !flight.getCarrier().trim().isEmpty() &&
                 flight.getDepartureTime() != null &&
                 flight.getArrivalTime() != null &&
-                isArrivalAfterDeparture(flight.getDepartureTime(), flight.getArrivalTime());
+                flight.getArrivalTime().isAfter(flight.getDepartureTime());
     }
 
     private boolean isAirportValid(Airport airport) {
@@ -59,13 +108,6 @@ public class FlightService {
                 from.getAirport().trim().equalsIgnoreCase(to.getAirport().trim());
     }
 
-    private boolean isArrivalAfterDeparture(String departureTime, String arrivalTime) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(datePattern);
-        LocalDateTime departure = LocalDateTime.parse(departureTime, formatter);
-        LocalDateTime arrival = LocalDateTime.parse(arrivalTime, formatter);
-        return arrival.isAfter(departure);
-    }
-
     public Flight getFlightById(int id) {
         return flightRepository.getFlightById(id);
     }
@@ -74,7 +116,7 @@ public class FlightService {
         flightRepository.clearAllFlights();
     }
 
-    public boolean deleteFlight(int id) {
+    public synchronized boolean deleteFlight(int id) {
         Flight flight = flightRepository.getFlightById(id);
         if (flight != null) {
             flightRepository.deleteFlight(id);
@@ -105,7 +147,7 @@ public class FlightService {
         return flightRepository.getAllFlights().stream()
                 .filter(flight -> flight.getFrom().getAirport().equalsIgnoreCase(request.getFrom())
                         && flight.getTo().getAirport().equalsIgnoreCase(request.getTo())
-                        && flight.getDepartureTime().startsWith(request.getDepartureDate()))
+                        && flight.getDepartureTime().toString().startsWith(request.getDepartureDate()))
                 .collect(Collectors.toList());
     }
 
@@ -118,4 +160,6 @@ public class FlightService {
     }
 
 }
+
+
 

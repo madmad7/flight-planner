@@ -1,5 +1,6 @@
 package io.codelex.flightplanner.flights;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Flight {
@@ -7,11 +8,11 @@ public class Flight {
     private Airport from;
     private Airport to;
     private String carrier;
-    private String departureTime;
-    private String arrivalTime;
+    private LocalDateTime departureTime;
+    private LocalDateTime arrivalTime;
     private int id;
 
-    public Flight(Airport from, Airport to, String carrier, String departureTime, String arrivalTime) {
+    public Flight(Airport from, Airport to, String carrier, LocalDateTime departureTime, LocalDateTime arrivalTime) {
         this.from = from;
         this.to = to;
         this.carrier = carrier;
@@ -43,19 +44,19 @@ public class Flight {
         this.carrier = carrier;
     }
 
-    public String getDepartureTime() {
+    public LocalDateTime getDepartureTime() {
         return departureTime;
     }
 
-    public void setDepartureTime(String departureTime) {
+    public void setDepartureTime(LocalDateTime departureTime) {
         this.departureTime = departureTime;
     }
 
-    public String getArrivalTime() {
+    public LocalDateTime getArrivalTime() {
         return arrivalTime;
     }
 
-    public void setArrivalTime(String arrivalTime) {
+    public void setArrivalTime(LocalDateTime arrivalTime) {
         this.arrivalTime = arrivalTime;
     }
 
@@ -73,8 +74,8 @@ public class Flight {
                 "from=" + from +
                 ", to=" + to +
                 ", carrier='" + carrier + '\'' +
-                ", departureTime='" + departureTime + '\'' +
-                ", arrivalTime='" + arrivalTime + '\'' +
+                ", departureTime=" + departureTime +
+                ", arrivalTime=" + arrivalTime +
                 ", id=" + id +
                 '}';
     }
@@ -92,3 +93,4 @@ public class Flight {
         return Objects.hash(from, to, carrier, departureTime, arrivalTime, id);
     }
 }
+
