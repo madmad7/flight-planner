@@ -1,16 +1,33 @@
 package io.codelex.flightplanner.flights;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "Flight")
 public class Flight {
 
-    private Airport from;
-    private Airport to;
-    private String carrier;
-    private LocalDateTime departureTime;
-    private LocalDateTime arrivalTime;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @ManyToOne
+    @JoinColumn(name = "from_airport_id")
+    private Airport from;
+
+    @ManyToOne
+    @JoinColumn(name = "to_airport_id")
+    private Airport to;
+
+    private String carrier;
+
+    @Column(name = "departure_time")
+    private LocalDateTime departureTime;
+
+    @Column(name = "arrival_time")
+    private LocalDateTime arrivalTime;
 
     public Flight(Airport from, Airport to, String carrier, LocalDateTime departureTime, LocalDateTime arrivalTime) {
         this.from = from;
@@ -18,6 +35,17 @@ public class Flight {
         this.carrier = carrier;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
+    }
+
+    public Flight() {
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Airport getFrom() {
@@ -60,23 +88,15 @@ public class Flight {
         this.arrivalTime = arrivalTime;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     @Override
     public String toString() {
         return "Flight{" +
-                "from=" + from +
+                "id=" + id +
+                ", from=" + from +
                 ", to=" + to +
                 ", carrier='" + carrier + '\'' +
                 ", departureTime=" + departureTime +
                 ", arrivalTime=" + arrivalTime +
-                ", id=" + id +
                 '}';
     }
 
@@ -85,12 +105,16 @@ public class Flight {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Flight flight = (Flight) o;
-        return id == flight.id && Objects.equals(from, flight.from) && Objects.equals(to, flight.to) && Objects.equals(carrier, flight.carrier) && Objects.equals(departureTime, flight.departureTime) && Objects.equals(arrivalTime, flight.arrivalTime);
+        return Objects.equals(id, flight.id) &&
+                Objects.equals(from, flight.from) &&
+                Objects.equals(to, flight.to) &&
+                Objects.equals(carrier, flight.carrier) &&
+                Objects.equals(departureTime, flight.departureTime) &&
+                Objects.equals(arrivalTime, flight.arrivalTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(from, to, carrier, departureTime, arrivalTime, id);
+        return Objects.hash(id, from, to, carrier, departureTime, arrivalTime);
     }
 }
-

@@ -11,9 +11,8 @@ import java.util.List;
 
 @RestController
 public class FlightController {
-    private final FlightService flightService;
-
-    public FlightController(FlightService flightService) {
+    private final AbstractFlightService flightService;
+    public FlightController(AbstractFlightService flightService) {
         this.flightService = flightService;
     }
 

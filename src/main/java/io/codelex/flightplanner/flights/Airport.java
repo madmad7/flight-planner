@@ -1,18 +1,30 @@
 package io.codelex.flightplanner.flights;
 
+import jakarta.persistence.*;
+
 import java.util.Objects;
 
+@Entity
+@Table(name = "Airport")
 public class Airport {
 
-   private String country;
-   private String city;
-   private String airport;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    private String country;
+    private String city;
+    private String airport;
+
+    public Airport() {
+    }
 
     public Airport(String country, String city, String airport) {
         this.country = country;
         this.city = city;
         this.airport = airport;
     }
+
 
     public String getCountry() {
         return country;
