@@ -1,6 +1,7 @@
-package io.codelex.flightplanner.flights;
+package io.codelex.flightplanner.flights.inMemory;
 
 import io.codelex.flightplanner.exceptions.BadRequestException;
+import io.codelex.flightplanner.flights.Flight;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

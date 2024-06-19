@@ -4,8 +4,8 @@ import java.time.format.DateTimeFormatter;
 
 public class ResponseToFlightRequest {
 
-    private Airport from;
-    private Airport to;
+    private AirportResponse from;
+    private AirportResponse to;
     private String carrier;
     private String departureTime;
     private String arrivalTime;
@@ -13,32 +13,33 @@ public class ResponseToFlightRequest {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    public ResponseToFlightRequest() {    }
+    public ResponseToFlightRequest() {
+    }
 
     public static ResponseToFlightRequest fromFlight(Flight flight) {
         ResponseToFlightRequest responseToFlightRequest = new ResponseToFlightRequest();
         responseToFlightRequest.setId(flight.getId());
-        responseToFlightRequest.setFrom(flight.getFrom());
-        responseToFlightRequest.setTo(flight.getTo());
+        responseToFlightRequest.setFrom(new AirportResponse(flight.getFrom()));
+        responseToFlightRequest.setTo(new AirportResponse(flight.getTo()));
         responseToFlightRequest.setCarrier(flight.getCarrier());
         responseToFlightRequest.setDepartureTime(flight.getDepartureTime().format(formatter));
         responseToFlightRequest.setArrivalTime(flight.getArrivalTime().format(formatter));
         return responseToFlightRequest;
     }
 
-    public Airport getFrom() {
+    public AirportResponse getFrom() {
         return from;
     }
 
-    public void setFrom(Airport from) {
+    public void setFrom(AirportResponse from) {
         this.from = from;
     }
 
-    public Airport getTo() {
+    public AirportResponse getTo() {
         return to;
     }
 
-    public void setTo(Airport to) {
+    public void setTo(AirportResponse to) {
         this.to = to;
     }
 
@@ -74,3 +75,7 @@ public class ResponseToFlightRequest {
         this.id = id;
     }
 }
+
+
+
+

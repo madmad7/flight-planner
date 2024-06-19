@@ -41,7 +41,7 @@ public abstract class AbstractFlightService {
         );
     }
 
-    private boolean isValidAddFlightRequest(AddFlightRequest request) {
+    protected boolean isValidAddFlightRequest(AddFlightRequest request) {
         if (request == null) {
             return false;
         }

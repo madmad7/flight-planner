@@ -1,14 +1,11 @@
-package io.codelex.flightplanner.flights;
+package io.codelex.flightplanner.flights.inMemory;
 
-import io.codelex.flightplanner.exceptions.BadRequestException;
 import io.codelex.flightplanner.exceptions.FlightAlreadyExistsException;
 import io.codelex.flightplanner.exceptions.InvalidFlightException;
+import io.codelex.flightplanner.flights.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
