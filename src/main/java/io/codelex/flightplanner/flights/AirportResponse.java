@@ -1,35 +1,18 @@
 package io.codelex.flightplanner.flights;
 
-import jakarta.persistence.*;
 
 import java.util.Objects;
-
-@Entity
-public class Airport {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
+public class AirportResponse {
     private String country;
     private String city;
     private String airport;
 
-    public Airport() {
-    }
+    public AirportResponse() {}
 
-    public Airport(String country, String city, String airport) {
-        this.country = country;
-        this.city = city;
-        this.airport = airport;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+    public AirportResponse(Airport airport) {
+        this.country = airport.getCountry();
+        this.city = airport.getCity();
+        this.airport = airport.getAirport();
     }
 
     public String getCountry() {
@@ -58,7 +41,7 @@ public class Airport {
 
     @Override
     public String toString() {
-        return "Airport{" +
+        return "AirportResponse{" +
                 "country='" + country + '\'' +
                 ", city='" + city + '\'' +
                 ", airport='" + airport + '\'' +
@@ -69,8 +52,8 @@ public class Airport {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Airport airport1 = (Airport) o;
-        return Objects.equals(country, airport1.country) && Objects.equals(city, airport1.city) && Objects.equals(airport, airport1.airport);
+        AirportResponse that = (AirportResponse) o;
+        return Objects.equals(country, that.country) && Objects.equals(city, that.city) && Objects.equals(airport, that.airport);
     }
 
     @Override

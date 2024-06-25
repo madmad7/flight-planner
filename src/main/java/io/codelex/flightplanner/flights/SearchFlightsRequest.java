@@ -7,8 +7,6 @@ public class SearchFlightsRequest {
     private String to;
     private String departureDate;
 
-
-
     public SearchFlightsRequest() {}
 
     public SearchFlightsRequest(String from, String to, String departureDate) {
@@ -49,7 +47,6 @@ public class SearchFlightsRequest {
                 ", departureDate='" + departureDate + '\'' +
                 '}';
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -57,7 +54,6 @@ public class SearchFlightsRequest {
         SearchFlightsRequest that = (SearchFlightsRequest) o;
         return Objects.equals(from, that.from) && Objects.equals(to, that.to) && Objects.equals(departureDate, that.departureDate);
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(from, to, departureDate);
