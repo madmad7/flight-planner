@@ -1,6 +1,7 @@
-package io.codelex.flightplanner.flights;
+package io.codelex.flightplanner.flights.inMemory;
 
 import io.codelex.flightplanner.exceptions.BadRequestException;
+import io.codelex.flightplanner.flights.Flight;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Repository
-public class FlightRepository {
+public class FlightInMemoryRepository {
 
     private List<Flight> flightList = new ArrayList<>();
     private AtomicInteger nextId = new AtomicInteger(1);
@@ -45,7 +46,6 @@ public class FlightRepository {
                 flight1.getArrivalTime().equals(flight2.getArrivalTime());
     }
 
-
     public Flight getFlightById(int id) {
         for (Flight flight : flightList) {
             if (flight.getId() == id) {
@@ -54,7 +54,6 @@ public class FlightRepository {
         }
         return null;
     }
-
     public List<Flight> getAllFlights() {
         return new ArrayList<>(flightList);
     }
@@ -70,3 +69,4 @@ public class FlightRepository {
     }
 
 }
+

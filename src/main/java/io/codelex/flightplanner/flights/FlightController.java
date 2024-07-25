@@ -8,12 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class FlightController {
-    private final FlightService flightService;
-
-    public FlightController(FlightService flightService) {
+    private final AbstractFlightService flightService;
+    public FlightController(AbstractFlightService flightService) {
         this.flightService = flightService;
     }
 
@@ -50,8 +50,11 @@ public class FlightController {
     }
 
     @GetMapping("/api/airports")
-    public List<Airport> searchAirports(@RequestParam String search) {
-        return flightService.searchAirports(search);
+    public List<AirportResponse> searchAirports(@RequestParam String search) {
+        List<Airport> airports = flightService.searchAirports(search);
+        return airports.stream()
+                .map(AirportResponse::new)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/api/flights/search")

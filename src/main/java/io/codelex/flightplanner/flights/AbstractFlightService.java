@@ -1,41 +1,30 @@
 package io.codelex.flightplanner.flights;
 
 import io.codelex.flightplanner.exceptions.BadRequestException;
-import io.codelex.flightplanner.exceptions.FlightAlreadyExistsException;
 import io.codelex.flightplanner.exceptions.InvalidFlightException;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-@Service
-public class FlightService {
+public abstract class AbstractFlightService {
 
-    private final FlightRepository flightRepository;
+    protected static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public abstract Flight addFlight(AddFlightRequest request);
 
-    public FlightService(FlightRepository flightRepository) {
-        this.flightRepository = flightRepository;
-    }
+    public abstract Flight getFlightById(int id);
 
-    public synchronized Flight addFlight(AddFlightRequest request) {
-        Flight flight = convertToFlight(request);
-        if (!isValidFlight(flight)) {
-            throw new InvalidFlightException("Invalid flight details");
-        }
-        if (flightRepository.flightExists(flight)) {
-            throw new FlightAlreadyExistsException("Flight already exists");
-        }
-        flightRepository.addFlight(flight);
-        return flight;
-    }
+    public abstract void clearAllFlights();
 
-    public Flight convertToFlight(AddFlightRequest request) {
+    public abstract boolean deleteFlight(int id);
+
+    public abstract List<Airport> searchAirports(String searchText);
+
+    public abstract List<Flight> searchFlights(SearchFlightsRequest request);
+
+    protected Flight convertToFlight(AddFlightRequest request) {
         if (!isValidAddFlightRequest(request)) {
             throw new InvalidFlightException("Invalid flight details");
         }
@@ -52,7 +41,7 @@ public class FlightService {
         );
     }
 
-    private boolean isValidAddFlightRequest(AddFlightRequest request) {
+    protected boolean isValidAddFlightRequest(AddFlightRequest request) {
         if (request == null) {
             return false;
         }
@@ -79,12 +68,7 @@ public class FlightService {
         return true;
     }
 
-    public ResponseToFlightRequest convertToResponseFlight(Flight flight) {
-        return ResponseToFlightRequest.fromFlight(flight);
-    }
-
-
-    private boolean isValidFlight(Flight flight) {
+    protected boolean isValidFlight(Flight flight) {
         return flight != null &&
                 isAirportValid(flight.getFrom()) &&
                 isAirportValid(flight.getTo()) &&
@@ -108,58 +92,17 @@ public class FlightService {
                 from.getAirport().trim().equalsIgnoreCase(to.getAirport().trim());
     }
 
-    public Flight getFlightById(int id) {
-        return flightRepository.getFlightById(id);
+    public ResponseToFlightRequest convertToResponseFlight(Flight flight) {
+        return ResponseToFlightRequest.fromFlight(flight);
     }
 
-    public void clearAllFlights() {
-        flightRepository.clearAllFlights();
-    }
-
-    public synchronized boolean deleteFlight(int id) {
-        Flight flight = flightRepository.getFlightById(id);
-        if (flight != null) {
-            flightRepository.deleteFlight(id);
-            return true;
-        } else {
-            return true;
-        }
-    }
-
-    public List<Airport> searchAirports(String searchText) {
-        return flightRepository.getAllFlights().stream()
-                .flatMap(flight -> Stream.of(flight.getFrom(), flight.getTo()))
-                .filter(airport -> airportMatchesSearchText(airport, searchText))
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    private boolean airportMatchesSearchText(Airport airport, String searchText) {
-        String trimmedSearchText = searchText.trim().toLowerCase();
-        return airport.getCountry().toLowerCase().contains(trimmedSearchText) ||
-                airport.getCity().toLowerCase().contains(trimmedSearchText) ||
-                airport.getAirport().toLowerCase().contains(trimmedSearchText);
-    }
-
-    public List<Flight> searchFlights(SearchFlightsRequest request) {
-        validateSearchRequest(request);
-
-        return flightRepository.getAllFlights().stream()
-                .filter(flight -> flight.getFrom().getAirport().equalsIgnoreCase(request.getFrom())
-                        && flight.getTo().getAirport().equalsIgnoreCase(request.getTo())
-                        && flight.getDepartureTime().toString().startsWith(request.getDepartureDate()))
-                .collect(Collectors.toList());
-    }
-
-    private void validateSearchRequest(SearchFlightsRequest request) {
+    protected void validateSearchRequest(SearchFlightsRequest request) {
         if (request.getFrom() == null || request.getTo() == null || request.getDepartureDate() == null ||
                 request.getFrom().trim().isEmpty() || request.getTo().trim().isEmpty() || request.getDepartureDate().trim().isEmpty() ||
                 request.getFrom().equalsIgnoreCase(request.getTo())) {
             throw new BadRequestException("Invalid search request");
         }
     }
-
 }
-
 
 
